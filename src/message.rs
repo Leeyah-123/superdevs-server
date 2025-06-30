@@ -48,13 +48,6 @@ pub struct VerifyMessageData {
 
 #[post("/sign")]
 async fn sign(req: web::Json<SignMessageRequest>) -> impl Responder {
-    if req.message.is_empty() || req.secret.is_empty() {
-        return HttpResponse::BadRequest().json(ErrorResponse {
-            success: false,
-            error: "Missing required fields".to_string(),
-        });
-    }
-
     match sign_message(&req.message, &req.secret) {
         Ok(data) => HttpResponse::Ok().json(ApiResponse {
             success: true,
@@ -69,13 +62,6 @@ async fn sign(req: web::Json<SignMessageRequest>) -> impl Responder {
 
 #[post("/verify")]
 async fn verify(req: web::Json<VerifyMessageRequest>) -> impl Responder {
-    if req.message.is_empty() || req.pubkey.is_empty() || req.signature.is_empty() {
-        return HttpResponse::BadRequest().json(ErrorResponse {
-            success: false,
-            error: "Missing required fields".to_string(),
-        });
-    }
-
     match verify_message(&req.message, &req.pubkey, &req.signature) {
         Ok(data) => HttpResponse::Ok().json(ApiResponse {
             success: true,

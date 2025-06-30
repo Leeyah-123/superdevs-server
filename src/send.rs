@@ -57,13 +57,6 @@ struct SimpleTransferInstructionResponse {
 
 #[post("/sol")]
 async fn send_sol(req: web::Json<SendSolRequest>) -> impl Responder {
-    if req.from.is_empty() || req.to.is_empty() || req.lamports == 0 {
-        return HttpResponse::BadRequest().json(ErrorResponse {
-            success: false,
-            error: "Missing required fields".to_string(),
-        });
-    }
-
     match create_sol_transfer_instruction(&req) {
         Ok(data) => HttpResponse::Ok().json(ApiResponse {
             success: true,
@@ -78,14 +71,6 @@ async fn send_sol(req: web::Json<SendSolRequest>) -> impl Responder {
 
 #[post("/token")]
 async fn send_token(req: web::Json<SendTokenRequest>) -> impl Responder {
-    if req.destination.is_empty() || req.mint.is_empty() || req.owner.is_empty() || req.amount == 0
-    {
-        return HttpResponse::BadRequest().json(ErrorResponse {
-            success: false,
-            error: "Missing required fields".to_string(),
-        });
-    }
-
     match create_token_transfer_instruction(&req) {
         Ok(data) => HttpResponse::Ok().json(ApiResponse {
             success: true,
@@ -104,6 +89,12 @@ fn create_sol_transfer_instruction(
     if req.from.is_empty() || req.to.is_empty() || req.lamports == 0 {
         return Err(ServerError::InvalidInput(
             "Missing required fields".to_string(),
+        ));
+    }
+    // from and to should not be the same
+    if req.from == req.to {
+        return Err(ServerError::InvalidInput(
+            "From and to addresses cannot be the same".to_string(),
         ));
     }
 
@@ -138,6 +129,12 @@ fn create_token_transfer_instruction(
     {
         return Err(ServerError::InvalidInput(
             "Missing required fields".to_string(),
+        ));
+    }
+    // from and to should not be the same
+    if req.destination == req.owner {
+        return Err(ServerError::InvalidInput(
+            "Destination and owner cannot be the same".to_string(),
         ));
     }
 

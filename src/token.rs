@@ -85,6 +85,11 @@ fn create_token_mint_instruction(req: &CreateTokenRequest) -> Result<CreateToken
             "Missing required fields".to_string(),
         ));
     }
+    if req.mint == req.mint_authority {
+        return Err(ServerError::InvalidInput(
+            "Mint and mint authority cannot be the same".to_string(),
+        ));
+    }
 
     // Parse mint and mint authority pubkeys
     let mint_pubkey = Pubkey::from_str(&req.mint)
@@ -132,6 +137,21 @@ fn create_mint_to_instruction(req: &MintTokenRequest) -> Result<CreateTokenRespo
     {
         return Err(ServerError::InvalidInput(
             "Missing required fields".to_string(),
+        ));
+    }
+    if req.mint == req.destination {
+        return Err(ServerError::InvalidInput(
+            "Mint and destination cannot be the same".to_string(),
+        ));
+    }
+    if req.mint == req.authority {
+        return Err(ServerError::InvalidInput(
+            "Mint and authority cannot be the same".to_string(),
+        ));
+    }
+    if req.destination == req.authority {
+        return Err(ServerError::InvalidInput(
+            "Destination and authority cannot be the same".to_string(),
         ));
     }
 
