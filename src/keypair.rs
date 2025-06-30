@@ -11,7 +11,7 @@ pub mod routes {
     use actix_web::web;
 
     pub fn configure(cfg: &mut web::ServiceConfig) {
-        cfg.service(web::scope("").service(generate_keypair));
+        cfg.service(web::scope("/keypair").service(generate_keypair));
     }
 }
 
@@ -21,7 +21,7 @@ struct KeypairResponse {
     secret: String,
 }
 
-#[post("/keypair")]
+#[post("/")]
 async fn generate_keypair() -> impl Responder {
     match create_new_keypair() {
         Ok(data) => HttpResponse::Ok().json(ApiResponse {
@@ -39,6 +39,7 @@ fn create_new_keypair() -> Result<KeypairResponse> {
     let keypair = Keypair::new();
     let pubkey = keypair.pubkey().to_string();
     let secret = bs58::encode(keypair.to_bytes()).into_string();
+    println!("CREATED KEYPAIR: {pubkey} {secret}");
 
     Ok(KeypairResponse { pubkey, secret })
 }
