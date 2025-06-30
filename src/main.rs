@@ -57,6 +57,7 @@ async fn main() -> std::io::Result<()> {
         // Register our app routes, services and middleware
         App::new()
             .wrap(cors)
+            .service(health_check)
             .configure(keypair_routes::configure)
             .configure(token_routes::configure)
             .configure(message_routes::configure)
