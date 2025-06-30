@@ -57,11 +57,10 @@ struct SimpleTransferInstructionResponse {
 
 #[post("/sol")]
 async fn send_sol(req: web::Json<SendSolRequest>) -> impl Responder {
-    // Validate inputs
     if req.from.is_empty() || req.to.is_empty() || req.lamports == 0 {
         return HttpResponse::BadRequest().json(ErrorResponse {
             success: false,
-            error: "Missing or invalid required fields".to_string(),
+            error: "Missing required fields".to_string(),
         });
     }
 
@@ -79,12 +78,11 @@ async fn send_sol(req: web::Json<SendSolRequest>) -> impl Responder {
 
 #[post("/token")]
 async fn send_token(req: web::Json<SendTokenRequest>) -> impl Responder {
-    // Validate inputs
     if req.destination.is_empty() || req.mint.is_empty() || req.owner.is_empty() || req.amount == 0
     {
         return HttpResponse::BadRequest().json(ErrorResponse {
             success: false,
-            error: "Missing or invalid required fields".to_string(),
+            error: "Missing required fields".to_string(),
         });
     }
 
@@ -103,6 +101,12 @@ async fn send_token(req: web::Json<SendTokenRequest>) -> impl Responder {
 fn create_sol_transfer_instruction(
     req: &SendSolRequest,
 ) -> Result<SimpleTransferInstructionResponse> {
+    if req.from.is_empty() || req.to.is_empty() || req.lamports == 0 {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Parse public keys
     let from_pubkey = Pubkey::from_str(&req.from)
         .map_err(|e| ServerError::InvalidInput(format!("Invalid from address: {}", e)))?;
@@ -130,6 +134,13 @@ fn create_sol_transfer_instruction(
 fn create_token_transfer_instruction(
     req: &SendTokenRequest,
 ) -> Result<TransferInstructionResponse> {
+    if req.destination.is_empty() || req.mint.is_empty() || req.owner.is_empty() || req.amount == 0
+    {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Parse pubkeys from the request
     let owner = Pubkey::from_str(&req.owner)
         .map_err(|e| ServerError::InvalidInput(format!("Invalid owner address: {}", e)))?;

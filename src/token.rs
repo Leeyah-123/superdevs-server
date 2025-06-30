@@ -80,6 +80,12 @@ async fn mint_token(req: web::Json<MintTokenRequest>) -> impl Responder {
 }
 
 fn create_token_mint_instruction(req: &CreateTokenRequest) -> Result<CreateTokenResponse> {
+    if req.mint.is_empty() || req.mint_authority.is_empty() || req.decimals == 0 {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Parse mint and mint authority pubkeys
     let mint_pubkey = Pubkey::from_str(&req.mint)
         .map_err(|e| ServerError::InvalidInput(format!("Invalid mint pubkey: {}", e)))?;
@@ -119,6 +125,16 @@ fn create_token_mint_instruction(req: &CreateTokenRequest) -> Result<CreateToken
 }
 
 fn create_mint_to_instruction(req: &MintTokenRequest) -> Result<CreateTokenResponse> {
+    if req.mint.is_empty()
+        || req.destination.is_empty()
+        || req.authority.is_empty()
+        || req.amount == 0
+    {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Parse pubkeys from the request
     let mint = Pubkey::from_str(&req.mint)
         .map_err(|e| ServerError::InvalidInput(format!("Invalid mint address: {}", e)))?;

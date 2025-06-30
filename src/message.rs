@@ -89,6 +89,12 @@ async fn verify(req: web::Json<VerifyMessageRequest>) -> impl Responder {
 }
 
 fn sign_message(message: &str, secret: &str) -> Result<SignMessageData> {
+    if message.is_empty() || secret.is_empty() {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Decode the keypair from base58
     let keypair_bytes = bs58::decode(secret)
         .into_vec()
@@ -120,6 +126,12 @@ fn verify_message(
     pubkey_str: &str,
     signature_str: &str,
 ) -> Result<VerifyMessageData> {
+    if message.is_empty() || pubkey_str.is_empty() || signature_str.is_empty() {
+        return Err(ServerError::InvalidInput(
+            "Missing required fields".to_string(),
+        ));
+    }
+
     // Parse the pubkey
     let pubkey = Pubkey::try_from(pubkey_str)
         .map_err(|e| ServerError::InvalidInput(format!("Invalid pubkey: {}", e)))?;
